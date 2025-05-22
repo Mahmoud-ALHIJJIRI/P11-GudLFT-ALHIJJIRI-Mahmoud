@@ -55,6 +55,13 @@ def purchasePlaces():
 
 @app.route('/points-sold', methods=['GET'])
 def list_club_and_points():
+    """
+    Display a list of all clubs and their current points.
+
+    This route renders the 'clubs.html' template and passes the
+    list of clubs from the in-memory data source. Each club's name
+    and point balance is shown to provide a quick overview of standings.
+    """
     return render_template('clubs.html', clubs=clubs)
 
 
