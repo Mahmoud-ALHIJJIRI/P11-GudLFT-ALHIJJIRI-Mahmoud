@@ -49,6 +49,8 @@ def purchasePlaces():
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     available_places = int(competition['numberOfPlaces'])
     placesRequired = int(request.form['places'])
+    # BUG5: Ensure a club cannot book more places than what the competition offers
+    # This validation prevents overbooking and enforces competition capacity limits
     if available_places < placesRequired:
         flash("You can't book more than the available places!")
         return render_template('booking.html', club=club, competition=competition)
