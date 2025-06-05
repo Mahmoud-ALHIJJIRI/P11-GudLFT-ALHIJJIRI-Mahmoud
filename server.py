@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash, url_for, session
 
 
 def loadClubs():
@@ -55,19 +55,30 @@ def book(competition, club):
 def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
+    session_key = f"{club['name']}_{competition['name']}"
+
     placesRequired = int(request.form['places'])
 
+    # Ensure club/competition exist (though list comprehensions might raise IndexError earlier)
     if not competition or not club:
         flash("Club or competition not found.")
         return redirect(url_for('index'))
 
+    # Check if places required exceed club's points
     if placesRequired > int(club['points']):
         flash(f"Your Point sold is: {club['points']} points. You can't buy {placesRequired}!")
         return render_template('booking.html', club=club, competition=competition)
 
-    club['points'] = str(int(club['points']) - placesRequired)
+    # Check if total booked places for this competition exceed 12
+    booked = session.get(session_key, 0)
+    if booked + placesRequired > 12:
+        flash("You can only book a total of 12 places per competition.")
+        return render_template('booking.html', club=club, competition=competition)
 
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+    # If all checks pass, proceed with booking
+    session[session_key] = booked + placesRequired
+    club['points'] = str(int(club['points']) - placesRequired)
+    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
 
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)

@@ -17,6 +17,7 @@
         </ul>
       {% endif %}
     {% endwith %}
+
     <form action="/purchasePlaces" method="post">
         <input type="hidden" name="club" value="{{club['name']}}">
         <input type="hidden" name="competition" value="{{competition['name']}}">
