@@ -14,7 +14,6 @@ def loadCompetitions():
     return listOfCompetitions
 
 
-
 app = Flask(__name__)
 app.secret_key = 'something_special'
 
@@ -57,7 +56,19 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
+
+    if not competition or not club:
+        flash("Club or competition not found.")
+        return redirect(url_for('index'))
+
+    if placesRequired > int(club['points']):
+        flash(f"Your Point sold is: {club['points']} points. You can't buy {placesRequired}!")
+        return render_template('booking.html', club=club, competition=competition)
+
+    club['points'] = str(int(club['points']) - placesRequired)
+
+    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)
 
