@@ -75,27 +75,41 @@ def purchasePlaces():
     session_key = f"{club['name']}_{competition['name']}"
 
     placesRequired = int(request.form['places'])
+    available_competition_places = int(competition['numberOfPlaces'])  # From BUG5 branch
+    booked_in_session = session.get(session_key, 0)  # From HEAD (BUG2 logic)
 
-    # Ensure club/competition exist (though list comprehensions might raise IndexError earlier)
+    # --- All Validation Checks ---
+
+    # Ensure club/competition exist (from HEAD, though IndexError might precede)
     if not competition or not club:
         flash("Club or competition not found.")
         return redirect(url_for('index'))
 
-    # Check if places required exceed club's points
+    # Check if places required exceed club's points (from HEAD)
     if placesRequired > int(club['points']):
         flash(f"Your Point sold is: {club['points']} points. You can't buy {placesRequired}!")
         return render_template('booking.html', club=club, competition=competition)
 
-    # Check if total booked places for this competition exceed 12
-    booked = session.get(session_key, 0)
-    if booked + placesRequired > 12:
+    # Check if total booked places for this competition exceed 12 (from HEAD)
+    if booked_in_session + placesRequired > 12:
         flash("You can only book a total of 12 places per competition.")
         return render_template('booking.html', club=club, competition=competition)
 
-    # If all checks pass, proceed with booking
-    session[session_key] = booked + placesRequired
+    # Check if places required exceed competition's available places (from BUG5)
+    if placesRequired > available_competition_places:
+        flash("You can't book more than the available places!")
+        return render_template('booking.html', club=club, competition=competition)
+
+    # --- If all checks pass, proceed with booking ---
+
+    # Update session for the 12-place limit
+    session[session_key] = booked_in_session + placesRequired
+
+    # Deduct points from club
     club['points'] = str(int(club['points']) - placesRequired)
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
+
+    # Deduct places from competition (present in both branches, now consolidated)
+    competition['numberOfPlaces'] = available_competition_places - placesRequired
 
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)

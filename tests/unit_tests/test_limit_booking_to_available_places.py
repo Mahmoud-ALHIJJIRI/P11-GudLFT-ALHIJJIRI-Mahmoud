@@ -3,17 +3,17 @@ import server
 from unittest.mock import MagicMock
 
 mocked_clubs_initial = [
-    {"name": "Simply Lift", "email": "john@simplylift.co", "points": "10"},
-    {"name": "She Lifts", "email": "kate@shelifts.co.uk", "points": "5"}
+    {"name": "Simply Lift", "email": "john@simplylift.co", "points": "100"},
+    {"name": "She Lifts", "email": "kate@shelifts.co.uk", "points": "50"}
 ]
 
 mocked_competitions_initial = [
-    {"name": "Spring Festival", "date": "2020-03-27 10:00:00", "numberOfPlaces": "25"},
-    {"name": "Fall Classic", "date": "2020-10-22 13:30:00", "numberOfPlaces": "13"}
+    {"name": "Small Competition", "date": "2025-09-01 10:00:00", "numberOfPlaces": "5"},
+    {"name": "Large Event", "date": "2025-10-22 13:30:00", "numberOfPlaces": "50"}
 ]
 
 
-def test_purchase_places_insufficient_points(mocker):
+def test_purchase_places_exceeds_competition_capacity(mocker):
     mocked_clubs = [club.copy() for club in mocked_clubs_initial]
     mocked_competitions = [comp.copy() for comp in mocked_competitions_initial]
 
@@ -22,9 +22,9 @@ def test_purchase_places_insufficient_points(mocker):
 
     mock_request = MagicMock()
     mock_request.form = {
-        'competition': 'Spring Festival',
+        'competition': 'Small Competition',
         'club': 'Simply Lift',
-        'places': '15'  # Trying to buy 15 places, but Simply Lift only has 10 points
+        'places': '8'  # Trying to book 8 places, but only 5 are available
     }
     mocker.patch('server.request', mock_request)
 
@@ -45,13 +45,10 @@ def test_purchase_places_insufficient_points(mocker):
 
     initial_club_points = int(club_under_test['points'])
     initial_competition_places = int(competition_under_test['numberOfPlaces'])
-    places_required = int(mock_request.form['places'])
 
     server.purchasePlaces()
 
-    expected_flash_message = (
-        f"Your Point sold is: {initial_club_points} points. You can't buy {places_required}!"
-    )
+    expected_flash_message = "You can't book more than the available places!"
     mock_flash.assert_called_once_with(expected_flash_message)
 
     mock_render_template.assert_called_once_with(
