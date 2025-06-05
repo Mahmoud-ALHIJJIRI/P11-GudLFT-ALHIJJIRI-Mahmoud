@@ -1,5 +1,3 @@
-# tests/unit_tests/test_purchase_places.py
-
 import pytest
 import server
 from unittest.mock import patch, MagicMock
