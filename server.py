@@ -14,6 +14,7 @@ def loadCompetitions():
     return listOfCompetitions
 
 
+
 app = Flask(__name__)
 app.secret_key = 'something_special'
 
@@ -27,8 +28,16 @@ def index():
 
 
 @app.route('/showSummary', methods=['POST'])
-def showSummary():
-    club = [club for club in clubs if club['email'] == request.form['email']][0]
+def show_summary():
+    email = request.form['email']
+    matched_clubs = [club for club in clubs if club['email'] == email]
+
+    if not matched_clubs:
+        flash("Email not found. Please try again.")
+        return redirect(url_for('index'))
+
+    club = matched_clubs[0]
+
     return render_template('welcome.html', club=club, competitions=competitions)
 
 
@@ -48,7 +57,7 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)
 
