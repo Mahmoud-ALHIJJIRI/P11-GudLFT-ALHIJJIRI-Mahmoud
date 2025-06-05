@@ -1,5 +1,3 @@
-# tests/unit_tests/test_book_past_competition.py
-
 import pytest
 import server
 from unittest.mock import patch, MagicMock
