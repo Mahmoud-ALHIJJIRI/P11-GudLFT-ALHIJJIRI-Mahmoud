@@ -3,4 +3,18 @@ include
 lib
 .Python
 .envrc
+
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+
+# Flask environment files
+.flaskenv
+
+# Python bytecode
+__pycache__/
 __pycache__
+*.pyc
