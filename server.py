@@ -8,6 +8,7 @@ def loadClubs():
         listOfClubs = json.load(c)['clubs']
     return listOfClubs
 
+
 def loadCompetitions():
     with open('competitions.json') as comps:
         listOfCompetitions = json.load(comps)['competitions']
@@ -100,7 +101,7 @@ def purchasePlaces():
         flash("You can't book more than the available places!")
         return render_template('booking.html', club=club, competition=competition)
 
-    # --- If all checks pass, proceed with booking ---
+    # If all checks pass, proceed with booking
 
     # Update session for the 12-place limit
     session[session_key] = booked_in_session + placesRequired
