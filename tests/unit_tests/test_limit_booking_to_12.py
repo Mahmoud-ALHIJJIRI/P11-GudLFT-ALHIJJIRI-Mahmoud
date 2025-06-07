@@ -77,3 +77,41 @@ def test_purchase_places_exceeds_max_per_competition(mocker):
 
     # 5. Verify that the session was NOT updated for the failed booking
     mock_session.__setitem__.assert_not_called()
+
+
+def test_purchase_places_success(mocker):
+    mocked_clubs = [club.copy() for club in mocked_clubs_initial]
+    mocked_competitions = [comp.copy() for comp in mocked_competitions_initial]
+
+    mocker.patch.object(server, 'clubs', mocked_clubs)
+    mocker.patch.object(server, 'competitions', mocked_competitions)
+
+    mock_request = MagicMock()
+    mock_request.form = {
+        'competition': 'Spring Festival',
+        'club': 'Simply Lift',
+        'places': '3'
+    }
+    mocker.patch('server.request', mock_request)
+
+    mock_session = {}
+    mocker.patch('server.session', mock_session)
+
+    mock_flash = mocker.patch('server.flash')
+    mock_render_template = mocker.patch('server.render_template')
+
+    club = mocked_clubs[0]
+    comp = mocked_competitions[0]
+
+    server.purchasePlaces()
+
+    assert club['points'] == '97'  # 100 - 3
+    assert comp['numberOfPlaces'] == 22  # 25 - 3
+    assert mock_session[f"{club['name']}_{comp['name']}"] == 3
+
+    mock_flash.assert_called_once_with("Great-booking complete!")
+    mock_render_template.assert_called_once_with(
+        'welcome.html',
+        club=club,
+        competitions=mocked_competitions
+    )
